@@ -102,6 +102,3 @@ cricket-analytics/
 
 ## Data credit
 Ball-by-ball data from [Cricsheet](https://cricsheet.org), maintained by Stephen Rushe.
-
----
-**Ananya Subramanian** · [LinkedIn](LINK) · [The Ananya Subramanian Show](LINK)
