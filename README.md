@@ -4,11 +4,8 @@ SQL analytics on Cricsheet ball-by-ball data for the IPL and T20 internationals:
 
 > **Headline finding:** _[One sentence with a number. e.g. "X has the best death-over strike rate in the IPL since 2008 (min. 300 balls) at 2xx, 40 points above the league average."]_
 
-**[Live dashboard](LINK)** · **[Show clip/post](LINK)**
 
 **Stack:** DuckDB · SQL · Python (pandas) · Tableau Public
-
-![Dashboard screenshot](dashboard/screenshot.png)
 
 ---
 
