@@ -1,10 +1,12 @@
 # Cricket Analytics: What Wins T20 Games?
 
-SQL analytics on Cricsheet ball-by-ball data for the IPL and T20 internationals: a DuckDB data model, five questions answered with CTEs and window functions, and a published Tableau Public dashboard.
+SQL analytics on Cricsheet ball-by-ball data for the IPL and T20 internationals: a DuckDB data model, five questions answered with CTEs and window functions, and an interactive website with the results.
 
-> **Headline finding:** _[One sentence with a number. e.g. "X has the best death-over strike rate in the IPL since 2008 (min. 300 balls) at 2xx, 40 points above the league average."]_
+**🔗 [View the interactive results →](https://ananyaasubramanian.github.io/cricket-analytics/)**
 
-**Stack:** DuckDB · SQL · Python (pandas) · Tableau Public
+> **Headline finding:** AB de Villiers has the best death-over strike rate in IPL history: **222.9** in overs 16–20 (1,868 runs off 838 balls), 20 points clear of the next best, Rishabh Pant (202.8). Minimum 300 balls.
+
+**Stack:** DuckDB · SQL · Python · HTML/JavaScript (GitHub Pages)
 
 ---
 
@@ -25,7 +27,8 @@ Five questions answered in SQL:
 ## 2. The data
 
 - **Source:** [Cricsheet](https://cricsheet.org) ball-by-ball JSON, covering the IPL and T20 internationals (men's). Free and openly licensed.
-- **Coverage:** _[seasons/years]_, _[N]_ matches, _[N]_ deliveries
+- **Coverage:** 4,683 matches and 1.07 million deliveries: IPL 2008–2026 (1,243 matches) and men's T20 internationals 2005–2026 (3,440 matches).
+- T20Is include associate nations as well as full members, so some leaderboards feature players from teams such as Nepal, Austria or Papua New Guinea. Cricsheet withholds matches involving Afghanistan's men's team.
 - **Data model** (DuckDB, `cricket.duckdb`):
 
 | Table | Grain | Key columns |
@@ -45,21 +48,21 @@ Five questions answered in SQL:
    - **Balls faced** excludes wides. **Legal balls bowled** exclude wides and no-balls.
    - **Phases:** powerplay is overs 1–6, middle overs are 7–15, death overs are 16–20.
    - **Strike rate** = runs ÷ balls faced × 100. **Economy** = runs conceded ÷ legal overs.
-   - **Minimum samples:** _[N]_ balls for batters, _[N]_ balls for bowlers, _[N]_ balls for matchups.
+   - **Minimum samples:** 300 death-over balls for batters (Q1), 100 balls in each chase situation (Q3), 300 legal balls per phase for bowlers (Q4), 30 balls for matchups (Q2).
 3. **Query:** each question is its own file in `sql/` and is commented so the logic can be read top to bottom.
-4. **Visualise:** query results are exported to CSV in `dashboard/data/` and feed the Tableau Public dashboard.
+4. **Visualise:** `etl/export.py` saves each query's results as CSV in `dashboard/data/`, which the [project website](https://ananyaasubramanian.github.io/cricket-analytics/) (`index.html`) reads and charts.
 
 ## 4. The answer
 
 | Question | Finding |
 | --- | --- |
-| Death-over strike rate | _[result + number]_ |
-| Bowler vs batter matchups | _[result + number]_ |
-| Pressure chases | _[result + number]_ |
-| Phase economy | _[result + number]_ |
-| Death-over scoring trend | _[result + number]_ |
+| Death-over strike rate | AB de Villiers leads the IPL at **222.9** (Pant 202.8, Russell 195.9). In T20Is, Nepal's Dipendra Singh Airee leads at **202.6**, ahead of Glenn Maxwell (197.0). |
+| Bowler vs batter matchups | Andre Russell has scored **78 off 30 balls** against Dwayne Bravo (strike rate 260) without being dismissed. On the bowling side, Prasidh Krishna has held Nicholas Pooran to **11 off 30**. |
+| Pressure chases | **269 of 301** batters score faster when the required rate is above 10. Phil Salt (189.5) and Tim David (187.7) are the quickest big names under pressure. Corey Anderson has one of the biggest drops, **41 points** slower under pressure. |
+| Phase economy | In the IPL, Dale Steyn is the tightest powerplay bowler (**6.26** an over), Munaf Patel the tightest in the middle overs (6.02), and Sunil Narine at the death (**7.25**, ahead of Malinga 7.86 and Bumrah 8.19). |
+| Death-over scoring trend | IPL death overs went from **9.95** runs an over in 2008 to a peak of **11.21** in 2024, with boundaries rising from about 1 ball in 5 to 1 in 4. T20Is fell from 9.89 (2018) to about 8.5 as associate matches grew from 72 to 575 a year. |
 
-**So what:** _[Two or three sentences on how a team analyst, captain or fantasy player would use this.]_
+**So what:** Death overs are where T20 games are won, and they are getting more expensive: IPL teams now score 11 an over at the death. Only two bowlers with 50+ IPL death overs concede under 8 an over there, Narine (7.25) and Malinga (7.86), which makes elite death bowlers as valuable to recruit as elite death hitters. Matchup and pressure splits then give captains and fantasy players a way to plan who bowls, and who bats, when a game is tight.
 
 ## 5. What I'd do next
 
@@ -73,12 +76,12 @@ Five questions answered in SQL:
 ## Run it yourself
 
 ```bash
-git clone https://github.com/[your-username]/cricket-analytics.git
+git clone https://github.com/AnanyaASubramanian/cricket-analytics.git
 cd cricket-analytics
 pip install duckdb pandas
 
 # Download "IPL" and "T20 Internationals" (JSON) from cricsheet.org/downloads
-# and unzip them into data/ipl/ and data/t20i/
+# and unzip them into data/ipl/ and data/t20i/, or put all_json.zip in data/
 python etl/load.py
 
 duckdb cricket.duckdb < sql/01_death_strike_rate.sql
@@ -92,7 +95,8 @@ python etl/export.py
 ```text
 cricket-analytics/
 ├── etl/
-│   └── load.py                  # JSON → DuckDB
+│   ├── load.py                  # JSON → DuckDB
+│   └── export.py                # query results → CSV
 ├── sql/
 │   ├── 00_views.sql             # shared definitions (deliveries_enriched)
 │   ├── 00_validation.sql        # totals vs scorecards
@@ -102,9 +106,9 @@ cricket-analytics/
 │   ├── 04_phase_economy.sql
 │   └── 05_death_scoring_trend.sql
 ├── dashboard/
-│   ├── data/                    # exported CSVs
-│   └── screenshot.png
+│   └── data/                    # exported CSVs (read by the website)
 ├── data/                        # raw Cricsheet files (git-ignored)
+├── index.html                   # project website (GitHub Pages)
 └── README.md
 ```
 
