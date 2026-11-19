@@ -35,7 +35,7 @@ Five questions answered in SQL:
 
 - Use `year`, not `season`, for IPL seasons: Cricsheet labels some by the year they span (2008 is `2007/08`). Filter `NOT is_super_over` unless you want super overs.
 
-- **Validation:** innings totals were reconciled against official scorecards for _[N]_ matches (`sql/00_validation.sql`).
+- **Validation:** runs and wickets for 15 innings across 8 landmark matches (including four World Cup finals and the IPL's record totals) match the official scorecards exactly, every ball's runs reconcile, and the only overs longer than six legal balls are 41 genuine umpire miscounts that Cricsheet records (`sql/00_validation.sql`).
 - The same database is reused in **Project 3** _[link once it exists]_.
 
 ## 3. The method
