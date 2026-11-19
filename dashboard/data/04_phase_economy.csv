@@ -1,61 +1,121 @@
-competition,phase,phase_rank,bowler,overs,runs_conceded,wickets,economy,dot_ball_pct
-IPL,powerplay,1,DW Steyn,189.0,1184,34,6.26,56.8
-IPL,powerplay,2,SL Malinga,185.0,1161,37,6.28,54.8
-IPL,powerplay,3,DP Nannes,57.0,360,15,6.32,57.9
-IPL,powerplay,4,RJ Harris,71.0,456,14,6.42,59.2
-IPL,powerplay,5,B Kumar,423.5,2778,97,6.55,55.4
-IPL,powerplay,6,P Kumar,262.0,1754,40,6.69,54.5
-IPL,powerplay,7,YK Pathan,59.0,395,14,6.69,48.6
-IPL,powerplay,8,Z Khan,215.2,1452,52,6.74,51.9
-IPL,powerplay,9,B Lee,81.0,560,11,6.91,54.9
-IPL,powerplay,10,SP Narine,165.0,1144,29,6.93,48.3
-IPL,middle,1,MM Patel,66.0,397,22,6.02,40.9
-IPL,middle,2,RE van der Merwe,52.0,317,11,6.1,38.8
-IPL,middle,3,J Botha,66.0,411,13,6.23,38.4
-IPL,middle,4,M Muralitharan,184.1,1174,39,6.37,41.4
-IPL,middle,5,DL Vettori,87.0,561,19,6.45,36.8
-IPL,middle,6,SP Narine,426.0,2781,94,6.53,36.9
-IPL,middle,7,DW Steyn,68.0,447,13,6.57,46.1
-IPL,middle,8,JJ Bumrah,157.0,1033,45,6.58,41.1
-IPL,middle,9,A Kumble,115.0,758,25,6.59,38.8
-IPL,middle,10,R Sharma,114.0,759,30,6.66,37.9
-IPL,death,1,SP Narine,184.1,1336,84,7.25,39.5
-IPL,death,2,SL Malinga,186.1,1464,108,7.86,35.0
-IPL,death,3,JJ Bumrah,237.1,1943,102,8.19,34.0
-IPL,death,4,R Ashwin,100.1,825,36,8.24,31.1
-IPL,death,5,DW Steyn,105.4,877,50,8.3,36.6
-IPL,death,6,AR Patel,63.4,544,22,8.54,33.2
-IPL,death,7,PP Chawla,74.0,641,39,8.66,35.1
-IPL,death,8,CH Morris,107.4,933,58,8.67,30.8
-IPL,death,9,CV Varun,54.4,476,19,8.71,37.5
-IPL,death,10,S Kaul,69.3,606,30,8.72,28.5
-T20I,powerplay,1,J Coetzee,53.0,217,20,4.09,67.0
-T20I,powerplay,2,S Gill,53.0,229,18,4.32,66.4
-T20I,powerplay,3,F Nsubuga,127.0,551,40,4.34,65.0
-T20I,powerplay,4,Mohammad Kamran,52.0,233,17,4.48,66.7
-T20I,powerplay,5,Muhammad Nadir,69.0,321,20,4.65,66.2
-T20I,powerplay,6,DM Nakrani,75.0,351,29,4.68,64.2
-T20I,powerplay,7,C Hinze,62.0,293,15,4.73,64.2
-T20I,powerplay,8,AR Ramjani,55.0,274,21,4.98,65.5
-T20I,powerplay,9,Pratik Singh Bais,61.0,317,12,5.2,56.8
-T20I,powerplay,10,KDA Lukies,58.0,303,22,5.22,60.9
-T20I,middle,1,AR Ramjani,121.0,546,55,4.51,48.5
-T20I,middle,2,Joshua Asia,63.0,287,22,4.56,48.7
-T20I,middle,3,S Ravichandran,90.2,421,34,4.66,52.0
-T20I,middle,4,Lucas Rossi,51.0,241,23,4.73,51.6
-T20I,middle,5,DL Brangman,79.0,378,33,4.78,55.1
-T20I,middle,6,LS Barkania,53.0,254,21,4.79,56.0
-T20I,middle,7,F Nsubuga,78.0,374,20,4.79,56.4
-T20I,middle,8,S Yeshi,69.0,331,21,4.8,47.8
-T20I,middle,9,C Rumistrzewicz,80.5,390,32,4.82,48.5
-T20I,middle,10,J Kariko,55.0,273,16,4.96,46.7
-T20I,death,1,S Lamichhane,54.4,315,38,5.76,48.8
-T20I,death,2,Virandeep Singh,70.3,439,42,6.23,46.3
-T20I,death,3,Ehsan Khan,92.2,615,59,6.66,43.9
-T20I,death,4,DM Nakrani,70.1,475,33,6.77,41.1
-T20I,death,5,Ali Dawood,95.1,663,57,6.97,41.2
-T20I,death,6,Saeed Ajmal,94.2,673,52,7.13,39.4
-T20I,death,7,JJ Bumrah,119.4,861,57,7.19,39.4
-T20I,death,8,D Wiese,50.4,367,27,7.24,35.2
-T20I,death,9,Rizwan Butt,110.3,818,67,7.4,39.2
-T20I,death,10,IO Okpe,79.5,596,43,7.47,39.9
+period,competition,phase,phase_rank,bowler,overs,runs_conceded,wickets,economy,dot_ball_pct
+All time,IPL,powerplay,1,DW Steyn,189.0,1184,34,6.26,56.8
+All time,IPL,powerplay,2,SL Malinga,185.0,1161,37,6.28,54.8
+All time,IPL,powerplay,3,DP Nannes,57.0,360,15,6.32,57.9
+All time,IPL,powerplay,4,RJ Harris,71.0,456,14,6.42,59.2
+All time,IPL,powerplay,5,B Kumar,423.5,2778,97,6.55,55.4
+All time,IPL,powerplay,6,P Kumar,262.0,1754,40,6.69,54.5
+All time,IPL,powerplay,7,YK Pathan,59.0,395,14,6.69,48.6
+All time,IPL,powerplay,8,Z Khan,215.2,1452,52,6.74,51.9
+All time,IPL,powerplay,9,B Lee,81.0,560,11,6.91,54.9
+All time,IPL,powerplay,10,SP Narine,165.0,1144,29,6.93,48.3
+All time,IPL,middle,1,MM Patel,66.0,397,22,6.02,40.9
+All time,IPL,middle,2,RE van der Merwe,52.0,317,11,6.1,38.8
+All time,IPL,middle,3,J Botha,66.0,411,13,6.23,38.4
+All time,IPL,middle,4,M Muralitharan,184.1,1174,39,6.37,41.4
+All time,IPL,middle,5,DL Vettori,87.0,561,19,6.45,36.8
+All time,IPL,middle,6,SP Narine,426.0,2781,94,6.53,36.9
+All time,IPL,middle,7,DW Steyn,68.0,447,13,6.57,46.1
+All time,IPL,middle,8,JJ Bumrah,157.0,1033,45,6.58,41.1
+All time,IPL,middle,9,A Kumble,115.0,758,25,6.59,38.8
+All time,IPL,middle,10,R Sharma,114.0,759,30,6.66,37.9
+All time,IPL,death,1,SP Narine,184.1,1336,84,7.25,39.5
+All time,IPL,death,2,SL Malinga,186.1,1464,108,7.86,35.0
+All time,IPL,death,3,JJ Bumrah,237.1,1943,102,8.19,34.0
+All time,IPL,death,4,R Ashwin,100.1,825,36,8.24,31.1
+All time,IPL,death,5,DW Steyn,105.4,877,50,8.3,36.6
+All time,IPL,death,6,AR Patel,63.4,544,22,8.54,33.2
+All time,IPL,death,7,PP Chawla,74.0,641,39,8.66,35.1
+All time,IPL,death,8,CH Morris,107.4,933,58,8.67,30.8
+All time,IPL,death,9,CV Varun,54.4,476,19,8.71,37.5
+All time,IPL,death,10,S Kaul,69.3,606,30,8.72,28.5
+All time,T20I,powerplay,1,J Coetzee,53.0,217,20,4.09,67.0
+All time,T20I,powerplay,2,S Gill,53.0,229,18,4.32,66.4
+All time,T20I,powerplay,3,F Nsubuga,127.0,551,40,4.34,65.0
+All time,T20I,powerplay,4,Mohammad Kamran,52.0,233,17,4.48,66.7
+All time,T20I,powerplay,5,Muhammad Nadir,69.0,321,20,4.65,66.2
+All time,T20I,powerplay,6,DM Nakrani,75.0,351,29,4.68,64.2
+All time,T20I,powerplay,7,C Hinze,62.0,293,15,4.73,64.2
+All time,T20I,powerplay,8,AR Ramjani,55.0,274,21,4.98,65.5
+All time,T20I,powerplay,9,Pratik Singh Bais,61.0,317,12,5.2,56.8
+All time,T20I,powerplay,10,KDA Lukies,58.0,303,22,5.22,60.9
+All time,T20I,middle,1,AR Ramjani,121.0,546,55,4.51,48.5
+All time,T20I,middle,2,Joshua Asia,63.0,287,22,4.56,48.7
+All time,T20I,middle,3,S Ravichandran,90.2,421,34,4.66,52.0
+All time,T20I,middle,4,Lucas Rossi,51.0,241,23,4.73,51.6
+All time,T20I,middle,5,DL Brangman,79.0,378,33,4.78,55.1
+All time,T20I,middle,6,LS Barkania,53.0,254,21,4.79,56.0
+All time,T20I,middle,7,F Nsubuga,78.0,374,20,4.79,56.4
+All time,T20I,middle,8,S Yeshi,69.0,331,21,4.8,47.8
+All time,T20I,middle,9,C Rumistrzewicz,80.5,390,32,4.82,48.5
+All time,T20I,middle,10,J Kariko,55.0,273,16,4.96,46.7
+All time,T20I,death,1,S Lamichhane,54.4,315,38,5.76,48.8
+All time,T20I,death,2,Virandeep Singh,70.3,439,42,6.23,46.3
+All time,T20I,death,3,Ehsan Khan,92.2,615,59,6.66,43.9
+All time,T20I,death,4,DM Nakrani,70.1,475,33,6.77,41.1
+All time,T20I,death,5,Ali Dawood,95.1,663,57,6.97,41.2
+All time,T20I,death,6,Saeed Ajmal,94.2,673,52,7.13,39.4
+All time,T20I,death,7,JJ Bumrah,119.4,861,57,7.19,39.4
+All time,T20I,death,8,D Wiese,50.4,367,27,7.24,35.2
+All time,T20I,death,9,Rizwan Butt,110.3,818,67,7.4,39.2
+All time,T20I,death,10,IO Okpe,79.5,596,43,7.47,39.9
+Since 2022,IPL,powerplay,1,DR Sams,21.0,148,8,7.05,50.8
+Since 2022,IPL,powerplay,2,GJ Maxwell,23.0,168,8,7.3,45.7
+Since 2022,IPL,powerplay,3,JJ Bumrah,81.0,598,17,7.38,52.3
+Since 2022,IPL,powerplay,4,B Kumar,161.0,1200,45,7.45,51.4
+Since 2022,IPL,powerplay,5,Sandeep Sharma,73.0,547,11,7.49,43.8
+Since 2022,IPL,powerplay,6,Mustafizur Rahman,34.0,255,7,7.5,44.6
+Since 2022,IPL,powerplay,7,M Prasidh Krishna,51.0,385,13,7.55,55.6
+Since 2022,IPL,powerplay,8,UT Yadav,62.0,471,13,7.6,52.4
+Since 2022,IPL,powerplay,9,TA Boult,145.0,1110,42,7.66,52.3
+Since 2022,IPL,powerplay,10,JP Behrendorff,27.0,207,8,7.67,42.6
+Since 2022,IPL,middle,1,JJ Bumrah,55.0,370,11,6.73,41.5
+Since 2022,IPL,middle,2,SP Narine,185.0,1252,40,6.77,35.9
+Since 2022,IPL,middle,3,MJ Santner,67.0,478,19,7.13,33.8
+Since 2022,IPL,middle,4,KH Pandya,156.0,1142,44,7.32,31.0
+Since 2022,IPL,middle,5,R Ashwin,136.0,1004,30,7.38,28.9
+Since 2022,IPL,middle,6,PJ Cummins,52.0,391,21,7.52,38.5
+Since 2022,IPL,middle,7,AR Patel,150.0,1128,33,7.52,30.6
+Since 2022,IPL,middle,8,Harpreet Brar,80.0,604,26,7.55,34.0
+Since 2022,IPL,middle,9,Washington Sundar,47.0,361,8,7.68,27.0
+Since 2022,IPL,middle,10,JC Archer,21.0,162,6,7.71,40.5
+Since 2022,IPL,death,1,SP Narine,36.0,218,19,6.06,41.2
+Since 2022,IPL,death,2,JJ Bumrah,65.3,477,29,7.28,34.6
+Since 2022,IPL,death,3,Noor Ahmad,25.1,208,13,8.26,44.4
+Since 2022,IPL,death,4,Kuldeep Yadav,37.4,322,16,8.55,33.6
+Since 2022,IPL,death,5,M Theekshana,26.0,236,12,9.08,32.1
+Since 2022,IPL,death,6,CV Varun,37.4,342,14,9.08,39.4
+Since 2022,IPL,death,7,M Pathirana,67.0,614,33,9.16,36.1
+Since 2022,IPL,death,8,RD Chahar,20.2,187,11,9.2,32.8
+Since 2022,IPL,death,9,Naveen-ul-Haq,26.3,256,12,9.66,33.3
+Since 2022,IPL,death,10,Rashid Khan,54.0,522,27,9.67,33.3
+Since 2022,T20I,powerplay,1,Abdul Samad,35.4,123,16,3.45,72.9
+Since 2022,T20I,powerplay,2,YM Nkanya,22.0,89,10,4.05,66.7
+Since 2022,T20I,powerplay,3,J Coetzee,53.0,217,20,4.09,67.0
+Since 2022,T20I,powerplay,4,S Gill,53.0,229,18,4.32,66.4
+Since 2022,T20I,powerplay,5,P Kumbhare,37.0,163,13,4.41,66.7
+Since 2022,T20I,powerplay,6,R Ankad,22.0,98,9,4.45,62.9
+Since 2022,T20I,powerplay,7,Mohammad Kamran,52.0,233,17,4.48,66.7
+Since 2022,T20I,powerplay,8,HB Dickson,24.0,108,3,4.5,63.9
+Since 2022,T20I,powerplay,8,J Kariko,20.0,90,7,4.5,63.3
+Since 2022,T20I,powerplay,10,A Kirschbaum,29.0,133,8,4.59,63.2
+Since 2022,T20I,middle,1,RD Atangana,20.1,76,8,3.77,62.0
+Since 2022,T20I,middle,2,DJ Turkich,25.0,108,9,4.32,58.0
+Since 2022,T20I,middle,3,K Fubler,39.2,172,17,4.37,54.7
+Since 2022,T20I,middle,4,MO Jones,21.0,94,6,4.48,51.6
+Since 2022,T20I,middle,5,AR Ramjani,121.0,546,55,4.51,48.5
+Since 2022,T20I,middle,6,C Hinze,37.4,171,15,4.54,53.5
+Since 2022,T20I,middle,7,Joshua Asia,63.0,287,22,4.56,48.7
+Since 2022,T20I,middle,8,B Ito-Davis,42.0,192,14,4.57,56.3
+Since 2022,T20I,middle,9,XSD Smith,38.0,175,14,4.61,51.8
+Since 2022,T20I,middle,10,MA Baig,28.4,133,9,4.64,59.3
+Since 2022,T20I,death,1,AR Ramjani,26.3,128,19,4.83,54.7
+Since 2022,T20I,death,2,S Lamichhane,39.5,199,27,5.0,51.0
+Since 2022,T20I,death,3,S Ravichandran,31.3,164,19,5.21,48.7
+Since 2022,T20I,death,4,AAP Rivero,46.1,245,23,5.31,48.0
+Since 2022,T20I,death,5,J Miyaji,34.5,191,27,5.48,52.6
+Since 2022,T20I,death,6,IK Gamantika,32.0,176,18,5.5,47.9
+Since 2022,T20I,death,7,H Ssenyondo,29.2,162,18,5.52,48.9
+Since 2022,T20I,death,8,J Coetzee,23.2,137,23,5.87,48.6
+Since 2022,T20I,death,9,Virandeep Singh,66.1,392,41,5.92,47.1
+Since 2022,T20I,death,10,LJ Myott,23.3,141,16,6.0,44.0

@@ -1,6 +1,6 @@
 # Cricket Analytics: What Wins T20 Games?
 
-SQL analytics on Cricsheet ball-by-ball data for the IPL and T20 internationals: a DuckDB data model, five questions answered with CTEs and window functions, and an interactive website with the results.
+SQL analytics on Cricsheet ball-by-ball data for the IPL and T20 internationals: a DuckDB data model, seven questions answered with CTEs and window functions, and an interactive website with the results and a lookup for 3,300+ players.
 
 **🔗 [View the interactive results →](https://ananyaasubramanian.github.io/cricket-analytics/)**
 
@@ -14,15 +14,17 @@ SQL analytics on Cricsheet ball-by-ball data for the IPL and T20 internationals:
 
 What separates winning T20 performances from losing ones, and which players deliver when it matters most?
 
-Five questions answered in SQL:
+Seven questions answered in SQL:
 
 | # | Question | Main SQL technique |
 | --- | --- | --- |
-| 1 | Who has the best strike rate in the death overs (16–20)? | CTE + `RANK()` |
+| 1 | Who has the best strike rate in the death overs (16–20), all time and since 2022? | CTE + `RANK()` over `PARTITION BY` period and competition |
 | 2 | Which bowler-vs-batter matchups are the most one-sided? | Multi-CTE aggregation, `HAVING` thresholds |
 | 3 | How do batters perform in high-pressure chases (required rate > 10)? | Running totals with `SUM() OVER (ORDER BY …)` |
 | 4 | Which bowlers are most economical in each phase (powerplay, middle, death)? | `CASE` phase buckets + `PARTITION BY` |
 | 5 | Has death-over scoring changed season by season, and does the IPL differ from T20Is? | `LAG()` over seasons |
+| 6 | Does winning the toss matter? Is it better to bat first or chase? | `GROUPING SETS` for yearly and all-time totals in one query |
+| 7 | Which grounds score highest, and where does chasing win? | Name cleaning with a rename lookup, `FILTER` aggregates |
 
 ## 2. The data
 
@@ -61,6 +63,8 @@ Five questions answered in SQL:
 | Pressure chases | **269 of 301** batters score faster when the required rate is above 10. Phil Salt (189.5) and Tim David (187.7) are the quickest big names under pressure. Corey Anderson has one of the biggest drops, **41 points** slower under pressure. |
 | Phase economy | In the IPL, Dale Steyn is the tightest powerplay bowler (**6.26** an over), Munaf Patel the tightest in the middle overs (6.02), and Sunil Narine at the death (**7.25**, ahead of Malinga 7.86 and Bumrah 8.19). |
 | Death-over scoring trend | IPL death overs went from **9.95** runs an over in 2008 to a peak of **11.21** in 2024, with boundaries rising from about 1 ball in 5 to 1 in 4. T20Is fell from 9.89 (2018) to about 8.5 as associate matches grew from 72 to 575 a year. |
+| Toss | Barely matters: toss winners win **51.6%** of IPL matches and 50.4% of T20Is. Chasing wins 54.7% of IPL matches, yet IPL captains now bowl first after **83%** of tosses (2025–26), up from 34% in 2010. |
+| Venues | Of IPL grounds with 40+ matches, Narendra Modi Stadium has the highest average first-innings score (**183.8**); chasing does best at Sawai Mansingh Stadium, Jaipur (**65.2%** of decided matches). |
 
 **So what:** Death overs are where T20 games are won, and they are getting more expensive: IPL teams now score 11 an over at the death. Only two bowlers with 50+ IPL death overs concede under 8 an over there, Narine (7.25) and Malinga (7.86), which makes elite death bowlers as valuable to recruit as elite death hitters. Matchup and pressure splits then give captains and fantasy players a way to plan who bowls, and who bats, when a game is tight.
 
@@ -86,8 +90,12 @@ python etl/load.py
 
 duckdb cricket.duckdb < sql/01_death_strike_rate.sql
 
-# Export every query's results to dashboard/data/*.csv
+# Export every query's results to dashboard/data/*.csv, then redraw the preview image
 python etl/export.py
+python etl/make_preview.py
+
+# Preview the website at http://localhost:8000
+python -m http.server
 ```
 
 ## Repo structure
@@ -96,7 +104,8 @@ python etl/export.py
 cricket-analytics/
 ├── etl/
 │   ├── load.py                  # JSON → DuckDB
-│   └── export.py                # query results → CSV
+│   ├── export.py                # query results → CSV + meta.json
+│   └── make_preview.py          # link-preview image for social sharing
 ├── sql/
 │   ├── 00_views.sql             # shared definitions (deliveries_enriched)
 │   ├── 00_validation.sql        # totals vs scorecards
@@ -104,10 +113,15 @@ cricket-analytics/
 │   ├── 02_matchups.sql
 │   ├── 03_pressure_chases.sql
 │   ├── 04_phase_economy.sql
-│   └── 05_death_scoring_trend.sql
+│   ├── 05_death_scoring_trend.sql
+│   ├── 06_toss_impact.sql
+│   ├── 07_venues.sql
+│   ├── 08_player_profiles.sql   # feeds the website's player lookup
+│   └── 09_matchup_pairs.sql     # feeds the player cards' matchups
 ├── dashboard/
 │   └── data/                    # exported CSVs (read by the website)
 ├── data/                        # raw Cricsheet files (git-ignored)
+├── assets/preview.png           # link-preview image
 ├── index.html                   # project website (GitHub Pages)
 └── README.md
 ```

@@ -40,4 +40,4 @@ SELECT 'Batter dominates', batter_rank,
        bowler, batter, balls, runs, dismissals, strike_rate, average
 FROM pair_rates
 WHERE batter_rank <= 10
-ORDER BY winner DESC, rank;
+ORDER BY winner DESC, rank, bowler, batter;

@@ -1,8 +1,9 @@
-"""Export each analysis query's results to CSV for the Tableau dashboard.
+"""Export each query's results to CSV for the project website.
 
-Runs every sql/01_*.sql ... sql/05_*.sql file against cricket.duckdb and writes
+Runs every sql/01_*.sql ... sql/09_*.sql file against cricket.duckdb and writes
 the result to dashboard/data/<same name>.csv. The 00_ files (view definition
-and validation checks) are not exported.
+and validation checks) are not exported. Also writes dashboard/data/meta.json
+with headline counts and the export date, which the website shows.
 
 The database is opened read-only. DuckDB lets only one program write to the
 file at a time, so close DBeaver first (Cmd+Q) if this fails with a lock error.
@@ -11,6 +12,8 @@ Usage:
     python etl/export.py
 """
 
+import datetime
+import json
 from pathlib import Path
 
 import duckdb
@@ -35,6 +38,27 @@ def main():
         # DuckDB writes the CSV itself, so whole numbers stay whole (1868, not 1868.0)
         result.write_csv(str(out_path))
         print(f"  {sql_file.name:<32} -> {out_path.relative_to(ROOT)}  ({result.shape[0]} rows)")
+
+    # Headline numbers for the website's summary tiles and "last updated" line
+    matches, ipl, t20i, first_date, last_date = con.sql("""
+        SELECT COUNT(*),
+               COUNT(*) FILTER (WHERE competition = 'IPL'),
+               COUNT(*) FILTER (WHERE competition = 'T20I'),
+               MIN(date), MAX(date)
+        FROM matches
+    """).fetchone()
+    deliveries = con.sql("SELECT COUNT(*) FROM deliveries").fetchone()[0]
+    meta = {
+        "matches": matches,
+        "ipl_matches": ipl,
+        "t20i_matches": t20i,
+        "deliveries": deliveries,
+        "first_date": str(first_date),
+        "last_date": str(last_date),
+        "exported": datetime.date.today().isoformat(),
+    }
+    (OUT_DIR / "meta.json").write_text(json.dumps(meta, indent=2) + "\n", encoding="utf-8")
+    print(f"  {'meta.json':<32} -> {(OUT_DIR / 'meta.json').relative_to(ROOT)}")
 
     con.close()
 

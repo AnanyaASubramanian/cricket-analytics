@@ -70,4 +70,4 @@ SELECT batter,
              - other_runs * 100.0 / NULLIF(other_balls, 0), 1)             AS sr_lift,
        RANK() OVER (ORDER BY pressure_runs * 1.0 / pressure_balls DESC)    AS pressure_rank
 FROM batter_split
-ORDER BY pressure_rank;
+ORDER BY pressure_rank, batter;
