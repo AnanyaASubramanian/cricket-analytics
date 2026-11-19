@@ -1,0 +1,5 @@
+{
+  // SQL in this repo is DuckDB, not SQL Server (T-SQL). The mssql extension's
+  // T-SQL checker flags valid DuckDB syntax (FILTER, USING), so turn it off here.
+  "mssql.intelliSense.enableErrorChecking": false
+}

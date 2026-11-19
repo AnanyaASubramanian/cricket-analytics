@@ -1,0 +1,12 @@
+# Database (rebuild with: python etl/load.py)
+cricket.duckdb
+cricket.duckdb.wal
+
+# Raw Cricsheet downloads
+data/
+
+# Python / OS
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
