@@ -1,0 +1,715 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>What Wins T20 Games?</title>
+<meta name="description" content="SQL analytics on 1.07 million balls of IPL and T20 international cricket: death-over hitting, matchups, pressure chases, phase economy and scoring trends.">
+<style>
+/* ---------- Colour tokens (light, with dark mode below) ---------- */
+:root {
+  color-scheme: light;
+  --page:           #f9f9f7;
+  --surface:        #fcfcfb;
+  --text-primary:   #0b0b0b;
+  --text-secondary: #52514e;
+  --text-muted:     #898781;
+  --grid:           #e1e0d9;
+  --axis:           #c3c2b7;
+  --border:         rgba(11,11,11,0.10);
+  --wash:           rgba(42,120,214,0.08);
+  --series-1:       #2a78d6;   /* blue   */
+  --series-2:       #eb6834;   /* orange */
+  --accent:         #2a78d6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --page:           #0d0d0d;
+    --surface:        #1a1a19;
+    --text-primary:   #f0efec;
+    --text-secondary: #c3c2b7;
+    --text-muted:     #898781;
+    --grid:           #2c2c2a;
+    --axis:           #383835;
+    --border:         rgba(255,255,255,0.10);
+    --wash:           rgba(57,135,229,0.14);
+    --series-1:       #3987e5;
+    --series-2:       #d95926;
+    --accent:         #6da7ec;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page:           #0d0d0d;
+  --surface:        #1a1a19;
+  --text-primary:   #f0efec;
+  --text-secondary: #c3c2b7;
+  --text-muted:     #898781;
+  --grid:           #2c2c2a;
+  --axis:           #383835;
+  --border:         rgba(255,255,255,0.10);
+  --wash:           rgba(57,135,229,0.14);
+  --series-1:       #3987e5;
+  --series-2:       #d95926;
+  --accent:         #6da7ec;
+}
+
+/* ---------- Page layout ---------- */
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--page);
+  color: var(--text-primary);
+  font: 16px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+main { max-width: 920px; margin: 0 auto; padding: 48px 16px 80px; }
+a { color: var(--accent); }
+h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.1; margin: 0 0 12px; letter-spacing: -0.02em; }
+h2 { font-size: 24px; line-height: 1.25; margin: 0 0 8px; letter-spacing: -0.01em; }
+h3 { font-size: 15px; margin: 0 0 4px; }
+p  { margin: 0 0 12px; }
+.kicker { color: var(--text-muted); font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 8px; }
+.lede { color: var(--text-secondary); font-size: 18px; max-width: 680px; }
+.muted { color: var(--text-muted); }
+.small { font-size: 13px; }
+section { margin-top: 64px; }
+.finding { font-size: 17px; max-width: 700px; }
+.finding strong { font-weight: 600; }
+
+/* ---------- Hero ---------- */
+.hero {
+  margin-top: 32px; padding: 24px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+}
+.hero-figure { font-size: clamp(48px, 12vw, 72px); font-weight: 650; line-height: 1; letter-spacing: -0.02em; }
+.hero-label { color: var(--text-secondary); margin-top: 8px; max-width: 560px; }
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }
+.tile { padding: 14px 16px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); }
+.tile .label { color: var(--text-secondary); font-size: 13px; }
+.tile .value { font-size: 24px; font-weight: 600; }
+@media (max-width: 640px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+
+/* ---------- Chart cards ---------- */
+.card {
+  margin-top: 16px; padding: 16px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--border);
+}
+.card-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: baseline; justify-content: space-between; margin-bottom: 8px; }
+.chart { width: 100%; position: relative; }
+.chart svg { display: block; width: 100%; overflow: visible; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+@media (max-width: 760px) { .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+
+/* Segmented toggle (IPL / T20I) */
+.toggle { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--page); border: 1px solid var(--border); }
+.toggle button {
+  font: inherit; font-size: 14px; border: 0; border-radius: 7px; padding: 4px 14px;
+  background: transparent; color: var(--text-secondary); cursor: pointer;
+}
+.toggle button[aria-pressed="true"] { background: var(--surface); color: var(--text-primary); font-weight: 600; box-shadow: 0 0 0 1px var(--border); }
+
+/* Legend */
+.legend { display: flex; flex-wrap: wrap; gap: 16px; font-size: 13px; color: var(--text-secondary); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.swatch.s1 { background: var(--series-1); }
+.swatch.s2 { background: var(--series-2); }
+.swatch.line { width: 16px; height: 2px; border-radius: 1px; }
+
+/* SVG marks: colours come from the tokens, so dark mode just works */
+.grid-line { stroke: var(--grid); stroke-width: 1; shape-rendering: crispEdges; }
+.axis-line { stroke: var(--axis); stroke-width: 1; shape-rendering: crispEdges; }
+.ref-line  { stroke: var(--axis); stroke-width: 1.5; }
+.tick      { fill: var(--text-muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.axis-title{ fill: var(--text-muted); font-size: 12px; }
+.row-label { fill: var(--text-secondary); font-size: 13px; }
+.row-value { fill: var(--text-primary); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.point-label { fill: var(--text-primary); font-size: 12px; font-weight: 600; }
+.note      { fill: var(--text-muted); font-size: 12px; }
+.dot       { stroke: var(--surface); stroke-width: 2; }
+.s1 { fill: var(--series-1); }
+.s2 { fill: var(--series-2); }
+.line-s1 { fill: none; stroke: var(--series-1); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.line-s2 { fill: none; stroke: var(--series-2); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.row-hit { fill: transparent; }
+.row-hit:hover, .row-hit.active { fill: var(--wash); }
+.crosshair { stroke: var(--axis); stroke-width: 1; }
+
+/* Tooltip */
+#tip {
+  position: fixed; z-index: 10; pointer-events: none; opacity: 0; transition: opacity .1s;
+  background: var(--surface); color: var(--text-primary); border: 1px solid var(--border);
+  box-shadow: 0 6px 24px rgba(0,0,0,.12); border-radius: 10px; padding: 8px 10px; font-size: 13px; line-height: 1.45;
+  max-width: 260px;
+}
+#tip.show { opacity: 1; }
+#tip b { font-weight: 600; }
+#tip .k { color: var(--text-secondary); }
+
+/* Data tables (the accessible view of every chart) */
+details { margin-top: 12px; }
+summary { cursor: pointer; color: var(--text-secondary); font-size: 14px; }
+.table-wrap { overflow-x: auto; margin-top: 8px; }
+table { border-collapse: collapse; font-size: 13px; width: 100%; }
+th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th { color: var(--text-secondary); font-weight: 600; }
+td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Methods */
+.method-list { padding-left: 20px; color: var(--text-secondary); }
+.method-list li { margin-bottom: 6px; }
+.error { padding: 12px 16px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); }
+footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--grid); color: var(--text-muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <div class="kicker">Cricket analytics · DuckDB · SQL</div>
+  <h1>What wins T20 games?</h1>
+  <p class="lede">Five questions answered in SQL from 1.07 million balls of IPL and men's T20 international cricket: who hits hardest at the death, which matchups are one-sided, who rises in a tough chase, who bowls tightest in each phase, and how death-over scoring has changed.</p>
+
+  <div class="hero">
+    <div class="hero-figure" id="hero-figure">–</div>
+    <div class="hero-label" id="hero-label">Loading…</div>
+  </div>
+
+  <div class="tiles">
+    <div class="tile"><div class="label">Matches</div><div class="value">4,683</div></div>
+    <div class="tile"><div class="label">Balls</div><div class="value">1.07M</div></div>
+    <div class="tile"><div class="label">Seasons</div><div class="value">2005–2026</div></div>
+    <div class="tile"><div class="label">Scorecards matched</div><div class="value">15 / 15</div></div>
+  </div>
+
+  <div id="load-error"></div>
+
+  <!-- ===================== Q1 ===================== -->
+  <section id="q1">
+    <div class="kicker">Question 1</div>
+    <h2>Who hits hardest in the death overs?</h2>
+    <p class="finding" id="q1-finding"></p>
+    <div class="card">
+      <div class="card-head">
+        <h3>Strike rate in overs 16–20 <span class="muted small">· top 15, min. 300 balls</span></h3>
+        <div class="toggle" data-target="q1" role="group" aria-label="Competition">
+          <button aria-pressed="true" data-value="IPL">IPL</button>
+          <button aria-pressed="false" data-value="T20I">T20I</button>
+        </div>
+      </div>
+      <div class="chart" id="q1-chart"></div>
+      <details><summary>Show data table</summary><div class="table-wrap" id="q1-table"></div></details>
+    </div>
+  </section>
+
+  <!-- ===================== Q2 ===================== -->
+  <section id="q2">
+    <div class="kicker">Question 2</div>
+    <h2>Which bowler-vs-batter matchups are the most one-sided?</h2>
+    <p class="finding" id="q2-finding"></p>
+    <div class="card">
+      <div class="grid-2">
+        <div>
+          <h3>Batter on top <span class="muted small">· highest strike rate</span></h3>
+          <div class="chart" id="q2-batter"></div>
+        </div>
+        <div>
+          <h3>Bowler on top <span class="muted small">· lowest strike rate</span></h3>
+          <div class="chart" id="q2-bowler"></div>
+        </div>
+      </div>
+      <p class="muted small" style="margin-top:12px">Batter's strike rate against that bowler, min. 30 balls. IPL and T20Is combined.</p>
+      <details><summary>Show data table</summary><div class="table-wrap" id="q2-table"></div></details>
+    </div>
+  </section>
+
+  <!-- ===================== Q3 ===================== -->
+  <section id="q3">
+    <div class="kicker">Question 3</div>
+    <h2>Who rises when the chase gets hard?</h2>
+    <p class="finding" id="q3-finding"></p>
+    <div class="card">
+      <div class="card-head">
+        <h3>Strike rate needing 10+ an over vs the rest of the chase</h3>
+        <div class="legend">
+          <span><i class="swatch s1"></i>Faster under pressure</span>
+          <span><i class="swatch s2"></i>Slower under pressure</span>
+        </div>
+      </div>
+      <div class="chart" id="q3-chart"></div>
+      <p class="muted small" style="margin-top:8px">Each dot is a batter with at least 100 balls in each situation. Above the diagonal line means they score faster when the required rate is over 10.</p>
+      <details><summary>Show data table</summary><div class="table-wrap" id="q3-table"></div></details>
+    </div>
+  </section>
+
+  <!-- ===================== Q4 ===================== -->
+  <section id="q4">
+    <div class="kicker">Question 4</div>
+    <h2>Who bowls tightest in each phase?</h2>
+    <p class="finding" id="q4-finding"></p>
+    <div class="card">
+      <div class="card-head">
+        <h3>Economy rate <span class="muted small">· top 10 per phase, min. 50 overs</span></h3>
+        <div class="toggle" data-target="q4" role="group" aria-label="Competition">
+          <button aria-pressed="true" data-value="IPL">IPL</button>
+          <button aria-pressed="false" data-value="T20I">T20I</button>
+        </div>
+      </div>
+      <div class="grid-3">
+        <div><h3>Powerplay <span class="muted small">overs 1–6</span></h3><div class="chart" id="q4-powerplay"></div></div>
+        <div><h3>Middle <span class="muted small">overs 7–15</span></h3><div class="chart" id="q4-middle"></div></div>
+        <div><h3>Death <span class="muted small">overs 16–20</span></h3><div class="chart" id="q4-death"></div></div>
+      </div>
+      <details><summary>Show data table</summary><div class="table-wrap" id="q4-table"></div></details>
+    </div>
+  </section>
+
+  <!-- ===================== Q5 ===================== -->
+  <section id="q5">
+    <div class="kicker">Question 5</div>
+    <h2>Has death-over scoring changed?</h2>
+    <p class="finding" id="q5-finding"></p>
+    <div class="card">
+      <div class="card-head">
+        <h3>Runs per over in overs 16–20, by year</h3>
+        <div class="legend">
+          <span><i class="swatch line s1" style="background:var(--series-1)"></i>IPL</span>
+          <span><i class="swatch line s2" style="background:var(--series-2)"></i>T20I</span>
+        </div>
+      </div>
+      <div class="chart" id="q5-chart"></div>
+      <p class="muted small" style="margin-top:8px">Years with fewer than 20 matches are left out, so the T20I line has a gap at 2008.</p>
+      <details><summary>Show data table</summary><div class="table-wrap" id="q5-table"></div></details>
+    </div>
+  </section>
+
+  <!-- ===================== Method ===================== -->
+  <section id="method">
+    <div class="kicker">How it was built</div>
+    <h2>Data, definitions and checks</h2>
+    <ul class="method-list">
+      <li><strong>Data:</strong> Cricsheet ball-by-ball JSON for the IPL (2008–2026) and men's T20 internationals (2005–2026), loaded into DuckDB by a Python script into two tables: <code>matches</code> and <code>deliveries</code>.</li>
+      <li><strong>Definitions</strong> live in one SQL view so every query agrees: balls faced exclude wides, legal balls exclude wides and no-balls, byes and leg byes aren't charged to the bowler, run-outs aren't credited to the bowler, super overs are excluded.</li>
+      <li><strong>Phases:</strong> powerplay overs 1–6, middle 7–15, death 16–20.</li>
+      <li><strong>Validation:</strong> runs and wickets for 15 innings across 8 landmark matches, including four World Cup finals, match the official scorecards exactly, and every ball's runs reconcile.</li>
+      <li><strong>Caveat:</strong> T20Is include associate nations, whose matches grew sharply after 2019. Cricsheet withholds matches involving Afghanistan's men's team.</li>
+    </ul>
+    <p><a href="https://github.com/AnanyaASubramanian/cricket-analytics">See the SQL and code on GitHub →</a></p>
+  </section>
+
+  <footer>Ball-by-ball data from <a href="https://cricsheet.org">Cricsheet</a>, maintained by Stephen Rushe.</footer>
+</main>
+
+<div id="tip" role="tooltip"></div>
+
+<script>
+/* =====================================================================
+   Data loading
+   Every chart reads a CSV that etl/export.py writes to dashboard/data/.
+   ===================================================================== */
+const FILES = {
+  q1: 'dashboard/data/01_death_strike_rate.csv',
+  q2: 'dashboard/data/02_matchups.csv',
+  q3: 'dashboard/data/03_pressure_chases.csv',
+  q4: 'dashboard/data/04_phase_economy.csv',
+  q5: 'dashboard/data/05_death_scoring_trend.csv',
+};
+
+// Minimal CSV parser (handles quoted fields). Numbers become numbers, blanks become null.
+function parseCSV(text) {
+  const rows = [];
+  let row = [], field = '', inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"' && text[i + 1] === '"') { field += '"'; i++; }
+      else if (ch === '"') inQuotes = false;
+      else field += ch;
+    } else if (ch === '"') inQuotes = true;
+    else if (ch === ',') { row.push(field); field = ''; }
+    else if (ch === '\n' || ch === '\r') {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(field); rows.push(row); row = []; field = '';
+    } else field += ch;
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row); }
+  const [header, ...body] = rows.filter(r => r.length > 1 || r[0] !== '');
+  return body.map(r => Object.fromEntries(header.map((h, i) => {
+    const v = r[i];
+    if (v === '' || v === undefined) return [h, null];
+    return [h, isNaN(+v) ? v : +v];
+  })));
+}
+
+/* =====================================================================
+   Small helpers: SVG, scales, ticks, text width, tooltip, formatting
+   ===================================================================== */
+const NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs = {}, parent) {
+  const e = document.createElementNS(NS, tag);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(e);
+  return e;
+}
+function text(parent, x, y, str, cls, anchor = 'start', baseline = 'middle') {
+  const t = svgEl('text', { x, y, class: cls, 'text-anchor': anchor, 'dominant-baseline': baseline }, parent);
+  t.textContent = str;
+  return t;
+}
+const linear = (d0, d1, r0, r1) => v => r0 + (v - d0) / (d1 - d0) * (r1 - r0);
+
+// "Nice" axis ticks: steps of 1, 2, 5 or 10 x a power of ten
+function niceTicks(min, max, count = 5) {
+  const raw = (max - min) / count;
+  const mag = 10 ** Math.floor(Math.log10(raw));
+  const f = raw / mag;
+  const step = (f >= 7.5 ? 10 : f >= 3.5 ? 5 : f >= 1.5 ? 2 : 1) * mag;
+  const lo = Math.floor(min / step) * step, hi = Math.ceil(max / step) * step;
+  const ticks = [];
+  for (let v = lo; v <= hi + step / 1e6; v += step) ticks.push(+v.toFixed(6));
+  return { lo, hi, ticks };
+}
+
+const measureCtx = document.createElement('canvas').getContext('2d');
+function textWidth(str, size = 13) {
+  measureCtx.font = `${size}px system-ui, -apple-system, "Segoe UI", sans-serif`;
+  return measureCtx.measureText(str).width;
+}
+
+const tip = document.getElementById('tip');
+function showTip(html, x, y) {
+  tip.innerHTML = html;
+  tip.classList.add('show');
+  const w = tip.offsetWidth, h = tip.offsetHeight;
+  let left = x + 14, top = y + 14;
+  if (left + w > window.innerWidth - 8) left = x - w - 14;
+  if (top + h > window.innerHeight - 8) top = y - h - 14;
+  tip.style.left = Math.max(8, left) + 'px';
+  tip.style.top = Math.max(8, top) + 'px';
+}
+function hideTip() { tip.classList.remove('show'); }
+
+const fmt1 = v => v == null ? '–' : v.toFixed(1);
+const fmt2 = v => v == null ? '–' : v.toFixed(2);
+const fmtInt = v => v == null ? '–' : Math.round(v).toLocaleString('en');
+
+// Build a plain HTML table from rows (the accessible view of each chart)
+function renderTable(containerId, rows, columns) {
+  const head = columns.map(c => `<th class="${c.num ? 'num' : ''}">${c.label}</th>`).join('');
+  const body = rows.map(r => '<tr>' + columns.map(c =>
+    `<td class="${c.num ? 'num' : ''}">${c.fmt ? c.fmt(r[c.key]) : (r[c.key] ?? '–')}</td>`).join('') + '</tr>').join('');
+  document.getElementById(containerId).innerHTML = `<table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+
+/* =====================================================================
+   Chart 1: ranked dot plot (used by Q1, Q2 and Q4)
+   One row per item: label on the left, a dot at its value, value beside it.
+   ===================================================================== */
+function dotPlot(container, rows, { label, value, format, tooltip, domain, cls = 's1', axisTitle }) {
+  container.innerHTML = '';
+  const width = container.clientWidth;
+  const rowH = 26, top = 4, axisH = axisTitle ? 40 : 24;
+  const height = top + rows.length * rowH + axisH;
+  const labelW = Math.min(Math.max(...rows.map(r => textWidth(label(r)))) + 12, width * 0.5);
+  const valueW = 46;
+  const x0 = labelW, x1 = width - valueW;
+
+  const vals = rows.map(value);
+  const { lo, hi, ticks } = niceTicks(domain ? domain[0] : Math.min(...vals), domain ? domain[1] : Math.max(...vals), Math.max(2, Math.floor((x1 - x0) / 70)));
+  const x = linear(lo, hi, x0, x1);
+
+  const svg = svgEl('svg', { viewBox: `0 0 ${width} ${height}`, height, role: 'img' }, container);
+  const plotBottom = top + rows.length * rowH;
+
+  // gridlines + tick labels
+  ticks.forEach(t => {
+    svgEl('line', { x1: x(t), x2: x(t), y1: top, y2: plotBottom, class: 'grid-line' }, svg);
+    text(svg, x(t), plotBottom + 14, format(t), 'tick', 'middle');
+  });
+  if (axisTitle) text(svg, (x0 + x1) / 2, plotBottom + 32, axisTitle, 'axis-title', 'middle');
+
+  rows.forEach((r, i) => {
+    const cy = top + i * rowH + rowH / 2;
+    const v = value(r);
+    const hit = svgEl('rect', { x: 0, y: top + i * rowH, width, height: rowH, rx: 6, class: 'row-hit' }, svg);
+    text(svg, labelW - 10, cy, label(r), 'row-label', 'end');
+    svgEl('circle', { cx: x(v), cy, r: 5, class: `dot ${cls}` }, svg);
+    text(svg, x(v) + 10, cy, format(v), 'row-value');
+    hit.addEventListener('mousemove', e => showTip(tooltip(r), e.clientX, e.clientY));
+    hit.addEventListener('mouseleave', hideTip);
+  });
+}
+
+/* =====================================================================
+   Chart 2: scatter with a y = x reference line (Q3)
+   ===================================================================== */
+function scatter(container, rows, { xKey, yKey, labelKey, highlight, tooltip, xTitle, yTitle }) {
+  container.innerHTML = '';
+  const width = container.clientWidth;
+  const height = Math.min(500, Math.max(320, width * 0.7));
+  const m = { top: 12, right: 16, bottom: 46, left: 52 };
+
+  // Same scale on both axes so the diagonal really is "no change"
+  const all = rows.flatMap(r => [r[xKey], r[yKey]]);
+  const { lo, hi, ticks } = niceTicks(Math.min(...all), Math.max(...all), 6);
+  const x = linear(lo, hi, m.left, width - m.right);
+  const y = linear(lo, hi, height - m.bottom, m.top);
+
+  const svg = svgEl('svg', { viewBox: `0 0 ${width} ${height}`, height, role: 'img' }, container);
+  ticks.forEach(t => {
+    svgEl('line', { x1: x(t), x2: x(t), y1: m.top, y2: height - m.bottom, class: 'grid-line' }, svg);
+    svgEl('line', { x1: m.left, x2: width - m.right, y1: y(t), y2: y(t), class: 'grid-line' }, svg);
+    text(svg, x(t), height - m.bottom + 14, t, 'tick', 'middle');
+    text(svg, m.left - 8, y(t), t, 'tick', 'end');
+  });
+  text(svg, (m.left + width - m.right) / 2, height - 8, xTitle, 'axis-title', 'middle');
+  const yt = text(svg, 14, (m.top + height - m.bottom) / 2, yTitle, 'axis-title', 'middle');
+  yt.setAttribute('transform', `rotate(-90 14 ${(m.top + height - m.bottom) / 2})`);
+
+  // y = x reference line
+  svgEl('line', { x1: x(lo), y1: y(lo), x2: x(hi), y2: y(hi), class: 'ref-line' }, svg);
+  text(svg, x(hi) - 4, y(hi) + 14, 'same either way', 'note', 'end');
+
+  const pts = rows.map(r => ({ r, px: x(r[xKey]), py: y(r[yKey]), cls: r[yKey] >= r[xKey] ? 's1' : 's2' }));
+  pts.forEach(p => { p.el = svgEl('circle', { cx: p.px, cy: p.py, r: 4, class: `dot ${p.cls}` }, svg); });
+
+  // Selective direct labels for a few named batters
+  pts.filter(p => highlight.includes(p.r[labelKey])).forEach(p => {
+    const right = p.px < width - 120;
+    text(svg, p.px + (right ? 8 : -8), p.py - 9, p.r[labelKey], 'point-label', right ? 'start' : 'end');
+  });
+
+  // Hover: nearest point within 24px
+  const overlay = svgEl('rect', { x: m.left, y: m.top, width: width - m.left - m.right, height: height - m.top - m.bottom, fill: 'transparent' }, svg);
+  let active = null;
+  overlay.addEventListener('mousemove', e => {
+    const box = svg.getBoundingClientRect();
+    const mx = (e.clientX - box.left) * (width / box.width), my = (e.clientY - box.top) * (height / box.height);
+    let best = null, bestD = 24 * 24;
+    pts.forEach(p => { const d = (p.px - mx) ** 2 + (p.py - my) ** 2; if (d < bestD) { bestD = d; best = p; } });
+    if (active && active !== best) active.el.setAttribute('r', 4);
+    active = best;
+    if (best) { best.el.setAttribute('r', 7); showTip(tooltip(best.r), e.clientX, e.clientY); }
+    else hideTip();
+  });
+  overlay.addEventListener('mouseleave', () => { if (active) active.el.setAttribute('r', 4); active = null; hideTip(); });
+}
+
+/* =====================================================================
+   Chart 3: multi-line by year with crosshair (Q5)
+   ===================================================================== */
+function lineChart(container, rows, { series, yKey, notes, tooltip }) {
+  container.innerHTML = '';
+  const width = container.clientWidth;
+  const height = Math.min(420, Math.max(300, width * 0.55));
+  const m = { top: 28, right: 76, bottom: 30, left: 40 };
+
+  const years = [...new Set(rows.map(r => r.year))].sort((a, b) => a - b);
+  const vals = rows.map(r => r[yKey]);
+  const { lo, hi, ticks } = niceTicks(Math.min(...vals), Math.max(...vals), 5);
+  const x = linear(years[0], years[years.length - 1], m.left, width - m.right);
+  const y = linear(lo, hi, height - m.bottom, m.top);
+
+  const svg = svgEl('svg', { viewBox: `0 0 ${width} ${height}`, height, role: 'img' }, container);
+  ticks.forEach(t => {
+    svgEl('line', { x1: m.left, x2: width - m.right, y1: y(t), y2: y(t), class: 'grid-line' }, svg);
+    text(svg, m.left - 8, y(t), t.toFixed(1), 'tick', 'end');
+  });
+  const yearStep = width < 520 ? 4 : 2;
+  years.filter(yr => yr % yearStep === 0).forEach(yr => text(svg, x(yr), height - m.bottom + 16, yr, 'tick', 'middle'));
+
+  // Annotations: thin vertical marker + short note at the top
+  notes.forEach(n => {
+    svgEl('line', { x1: x(n.year), x2: x(n.year), y1: m.top - 6, y2: height - m.bottom, class: 'grid-line' }, svg);
+    text(svg, x(n.year) + (n.align === 'end' ? -4 : 4), m.top - 16, n.text, 'note', n.align || 'start');
+  });
+
+  // One line per series; break the line where a year is missing
+  const bySeries = series.map(s => {
+    const pts = rows.filter(r => r.competition === s.key).sort((a, b) => a.year - b.year);
+    let d = '';
+    pts.forEach((p, i) => {
+      const gap = i > 0 && p.year - pts[i - 1].year > 1;
+      d += (i === 0 || gap ? 'M' : 'L') + x(p.year) + ',' + y(p[yKey]);
+    });
+    svgEl('path', { d, class: `line-${s.cls}` }, svg);
+    const last = pts[pts.length - 1];
+    svgEl('circle', { cx: x(last.year), cy: y(last[yKey]), r: 4, class: `dot ${s.cls}` }, svg);
+    text(svg, x(last.year) + 10, y(last[yKey]), `${s.key} ${last[yKey].toFixed(1)}`, 'row-value');
+    return { s, pts };
+  });
+
+  // Crosshair + tooltip, snapping to the nearest year
+  const cross = svgEl('line', { y1: m.top, y2: height - m.bottom, class: 'crosshair', visibility: 'hidden' }, svg);
+  const markers = bySeries.map(b => svgEl('circle', { r: 5, class: `dot ${b.s.cls}`, visibility: 'hidden' }, svg));
+  const overlay = svgEl('rect', { x: m.left, y: m.top, width: width - m.left - m.right, height: height - m.top - m.bottom, fill: 'transparent' }, svg);
+  overlay.addEventListener('mousemove', e => {
+    const box = svg.getBoundingClientRect();
+    const mx = (e.clientX - box.left) * (width / box.width);
+    const yr = years.reduce((a, b) => Math.abs(x(b) - mx) < Math.abs(x(a) - mx) ? b : a);
+    cross.setAttribute('x1', x(yr)); cross.setAttribute('x2', x(yr)); cross.setAttribute('visibility', 'visible');
+    const found = bySeries.map((b, i) => {
+      const p = b.pts.find(p => p.year === yr);
+      if (p) { markers[i].setAttribute('cx', x(yr)); markers[i].setAttribute('cy', y(p[yKey])); markers[i].setAttribute('visibility', 'visible'); }
+      else markers[i].setAttribute('visibility', 'hidden');
+      return { s: b.s, p };
+    });
+    showTip(tooltip(yr, found), e.clientX, e.clientY);
+  });
+  overlay.addEventListener('mouseleave', () => {
+    cross.setAttribute('visibility', 'hidden'); markers.forEach(mk => mk.setAttribute('visibility', 'hidden')); hideTip();
+  });
+}
+
+/* =====================================================================
+   Wire each question to its chart, finding text and table
+   ===================================================================== */
+const state = { q1: 'IPL', q4: 'IPL' };
+let DATA = null;
+
+function renderQ1() {
+  const rows = DATA.q1.filter(r => r.competition === state.q1).slice(0, 15);
+  dotPlot(document.getElementById('q1-chart'), rows, {
+    label: r => r.batter, value: r => r.strike_rate, format: fmt1, axisTitle: 'Strike rate (runs per 100 balls)',
+    tooltip: r => `<b>${r.batter}</b> · ${r.competition}<br><span class="k">Strike rate</span> ${fmt1(r.strike_rate)}<br><span class="k">Runs</span> ${fmtInt(r.runs)} off ${fmtInt(r.balls_faced)} balls<br><span class="k">Rank</span> ${r.sr_rank}`,
+  });
+  renderTable('q1-table', DATA.q1.filter(r => r.competition === state.q1), [
+    { key: 'sr_rank', label: 'Rank', num: true }, { key: 'batter', label: 'Batter' },
+    { key: 'runs', label: 'Runs', num: true, fmt: fmtInt }, { key: 'balls_faced', label: 'Balls', num: true, fmt: fmtInt },
+    { key: 'strike_rate', label: 'Strike rate', num: true, fmt: fmt1 },
+  ]);
+}
+
+function renderQ2() {
+  const batter = DATA.q2.filter(r => r.winner === 'Batter dominates');
+  const bowler = DATA.q2.filter(r => r.winner === 'Bowler dominates');
+  const max = Math.max(...DATA.q2.map(r => r.strike_rate));
+  const tt = r => `<b>${r.batter}</b> facing <b>${r.bowler}</b><br><span class="k">Strike rate</span> ${fmt1(r.strike_rate)}<br><span class="k">Runs</span> ${fmtInt(r.runs)} off ${r.balls} balls<br><span class="k">Dismissed</span> ${r.dismissals} time${r.dismissals === 1 ? '' : 's'}`;
+  const opts = { label: r => `${r.batter} v ${r.bowler}`, value: r => r.strike_rate, format: v => Math.round(v), domain: [0, max], tooltip: tt };
+  dotPlot(document.getElementById('q2-batter'), batter, { ...opts, cls: 's1' });
+  dotPlot(document.getElementById('q2-bowler'), bowler, { ...opts, cls: 's2' });
+  renderTable('q2-table', DATA.q2, [
+    { key: 'winner', label: 'Who wins' }, { key: 'rank', label: 'Rank', num: true },
+    { key: 'batter', label: 'Batter' }, { key: 'bowler', label: 'Bowler' },
+    { key: 'balls', label: 'Balls', num: true }, { key: 'runs', label: 'Runs', num: true },
+    { key: 'dismissals', label: 'Outs', num: true }, { key: 'strike_rate', label: 'Strike rate', num: true, fmt: fmt1 },
+  ]);
+}
+
+function renderQ3() {
+  const rows = DATA.q3;
+  const top = rows[0];
+  const bestLift = [...rows].sort((a, b) => b.sr_lift - a.sr_lift)[0];
+  const faster = rows.filter(r => r.sr_lift > 0).length;
+  document.getElementById('q3-finding').innerHTML =
+    `<strong>${faster} of ${rows.length}</strong> batters score faster when they need more than 10 an over. <strong>${top.batter}</strong> scores quickest under that pressure (${fmt1(top.pressure_sr)}), and <strong>${bestLift.batter}</strong> lifts the most, +${fmt1(bestLift.sr_lift)} on their usual chasing rate.`;
+  scatter(document.getElementById('q3-chart'), rows, {
+    xKey: 'other_chase_sr', yKey: 'pressure_sr', labelKey: 'batter',
+    highlight: ['Karanbir Singh', 'YBK Jaiswal', 'CJ Anderson', 'Namgay Thinley'],
+    xTitle: 'Strike rate in the rest of the chase', yTitle: 'Strike rate needing 10+ an over',
+    tooltip: r => `<b>${r.batter}</b><br><span class="k">Under pressure</span> ${fmt1(r.pressure_sr)} (${r.pressure_balls} balls)<br><span class="k">Rest of chase</span> ${fmt1(r.other_chase_sr)}<br><span class="k">Change</span> ${r.sr_lift > 0 ? '+' : ''}${fmt1(r.sr_lift)}`,
+  });
+  renderTable('q3-table', rows, [
+    { key: 'pressure_rank', label: 'Rank', num: true }, { key: 'batter', label: 'Batter' },
+    { key: 'pressure_balls', label: 'Pressure balls', num: true }, { key: 'pressure_sr', label: 'SR under pressure', num: true, fmt: fmt1 },
+    { key: 'other_chase_sr', label: 'SR rest of chase', num: true, fmt: fmt1 }, { key: 'sr_lift', label: 'Change', num: true, fmt: fmt1 },
+  ]);
+}
+
+function renderQ4() {
+  const comp = DATA.q4.filter(r => r.competition === state.q4);
+  const econ = comp.map(r => r.economy);
+  const domain = [Math.min(...econ), Math.max(...econ)];   // shared scale across the three phases
+  ['powerplay', 'middle', 'death'].forEach(phase => {
+    dotPlot(document.getElementById(`q4-${phase}`), comp.filter(r => r.phase === phase), {
+      label: r => r.bowler, value: r => r.economy, format: fmt2, domain,
+      tooltip: r => `<b>${r.bowler}</b> · ${phase}<br><span class="k">Economy</span> ${fmt2(r.economy)}<br><span class="k">Overs</span> ${r.overs} · <span class="k">Wickets</span> ${r.wickets}<br><span class="k">Dot balls</span> ${fmt1(r.dot_ball_pct)}%`,
+    });
+  });
+  renderTable('q4-table', comp, [
+    { key: 'phase', label: 'Phase' }, { key: 'phase_rank', label: 'Rank', num: true }, { key: 'bowler', label: 'Bowler' },
+    { key: 'overs', label: 'Overs', num: true }, { key: 'wickets', label: 'Wkts', num: true },
+    { key: 'economy', label: 'Economy', num: true, fmt: fmt2 }, { key: 'dot_ball_pct', label: 'Dot %', num: true, fmt: fmt1 },
+  ]);
+}
+
+function renderQ5() {
+  lineChart(document.getElementById('q5-chart'), DATA.q5, {
+    yKey: 'death_run_rate',
+    series: [{ key: 'IPL', cls: 's1' }, { key: 'T20I', cls: 's2' }],
+    notes: [
+      { year: 2019, text: 'T20I status for all ICC members', align: 'end' },
+      { year: 2023, text: 'Impact Player', align: 'start' },
+    ],
+    tooltip: (yr, found) => `<b>${yr}</b><br>` + found.map(f =>
+      `<span class="k">${f.s.key}</span> ${f.p ? fmt2(f.p.death_run_rate) + ' (' + f.p.matches + ' matches)' : 'not enough matches'}`).join('<br>'),
+  });
+  renderTable('q5-table', DATA.q5, [
+    { key: 'competition', label: 'Competition' }, { key: 'year', label: 'Year' },
+    { key: 'matches', label: 'Matches', num: true }, { key: 'death_run_rate', label: 'Run rate', num: true, fmt: fmt2 },
+    { key: 'change', label: 'Change', num: true, fmt: fmt2 }, { key: 'boundary_pct', label: 'Boundary %', num: true, fmt: fmt1 },
+  ]);
+}
+
+function writeStaticFindings() {
+  // Q1 + hero
+  const ipl = DATA.q1.filter(r => r.competition === 'IPL');
+  const t20i = DATA.q1.filter(r => r.competition === 'T20I');
+  const lead = ipl[0], second = ipl[1];
+  document.getElementById('hero-figure').textContent = fmt1(lead.strike_rate);
+  document.getElementById('hero-label').innerHTML =
+    `<strong>${lead.batter}</strong>'s strike rate in the IPL's death overs: ${fmtInt(lead.runs)} runs off ${fmtInt(lead.balls_faced)} balls, ${fmt1(lead.strike_rate - second.strike_rate)} clear of anyone else with at least 300 balls.`;
+  document.getElementById('q1-finding').innerHTML =
+    `<strong>${lead.batter}</strong> leads the IPL at ${fmt1(lead.strike_rate)}, ${fmt1(lead.strike_rate - second.strike_rate)} ahead of ${second.batter}. In T20Is, <strong>${t20i[0].batter}</strong> leads at ${fmt1(t20i[0].strike_rate)}.`;
+
+  // Q2
+  const b = DATA.q2.find(r => r.winner === 'Batter dominates' && r.rank === 1);
+  document.getElementById('q2-finding').innerHTML =
+    `The most lopsided matchup in the batter's favour: <strong>${b.batter}</strong> has scored ${b.runs} off ${b.balls} balls from <strong>${b.bowler}</strong> (strike rate ${fmt1(b.strike_rate)})` +
+    (b.dismissals === 0 ? ' without getting out.' : `, out only ${b.dismissals} time${b.dismissals === 1 ? '' : 's'}.`);
+
+  // Q4
+  const top = ph => DATA.q4.find(r => r.competition === 'IPL' && r.phase === ph && r.phase_rank === 1);
+  const pp = top('powerplay'), de = top('death');
+  document.getElementById('q4-finding').innerHTML =
+    `In the IPL, <strong>${pp.bowler}</strong> is the tightest powerplay bowler (${fmt2(pp.economy)} an over) and <strong>${de.bowler}</strong> the tightest at the death (${fmt2(de.economy)}).`;
+
+  // Q5
+  const iplRows = DATA.q5.filter(r => r.competition === 'IPL');
+  const first = iplRows[0], peak = iplRows.reduce((a, c) => c.death_run_rate > a.death_run_rate ? c : a);
+  document.getElementById('q5-finding').innerHTML =
+    `IPL death-over scoring rose from <strong>${fmt2(first.death_run_rate)}</strong> an over in ${first.year} to a peak of <strong>${fmt2(peak.death_run_rate)}</strong> in ${peak.year}. T20Is went the other way after 2019, as many more associate-nation matches entered the record.`;
+}
+
+function renderAll() { renderQ1(); renderQ2(); renderQ3(); renderQ4(); renderQ5(); }
+
+// IPL / T20I toggles
+document.querySelectorAll('.toggle').forEach(group => {
+  group.addEventListener('click', e => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    group.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+    state[group.dataset.target] = btn.dataset.value;
+    group.dataset.target === 'q1' ? renderQ1() : renderQ4();
+  });
+});
+
+// Redraw on resize so charts always fit their container
+let resizeTimer;
+window.addEventListener('resize', () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(() => DATA && renderAll(), 150); });
+
+Promise.all(Object.entries(FILES).map(([k, path]) =>
+  fetch(path).then(r => { if (!r.ok) throw new Error(path); return r.text(); }).then(t => [k, parseCSV(t)])))
+  .then(entries => {
+    DATA = Object.fromEntries(entries);
+    writeStaticFindings();
+    renderAll();
+  })
+  .catch(err => {
+    document.getElementById('hero-label').textContent = '';
+    document.getElementById('load-error').innerHTML =
+      `<p class="error" style="margin-top:16px">Couldn't load the data (${err.message}). If you opened this file directly, run <code>python3 -m http.server</code> in the project folder and visit <code>http://localhost:8000</code> instead.</p>`;
+  });
+</script>
+</body>
+</html>
