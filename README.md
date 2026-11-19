@@ -82,6 +82,9 @@ pip install duckdb pandas
 python etl/load.py
 
 duckdb cricket.duckdb < sql/01_death_strike_rate.sql
+
+# Export every query's results to dashboard/data/*.csv
+python etl/export.py
 ```
 
 ## Repo structure

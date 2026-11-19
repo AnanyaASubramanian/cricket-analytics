@@ -3,7 +3,7 @@ cricket.duckdb
 cricket.duckdb.wal
 
 # Raw Cricsheet downloads
-data/
+/data/
 
 # Python / OS
 __pycache__/
