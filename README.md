@@ -20,7 +20,7 @@ Five questions answered in SQL:
 | 2 | Which bowler-vs-batter matchups are the most one-sided? | Multi-CTE aggregation, `HAVING` thresholds |
 | 3 | How do batters perform in high-pressure chases (required rate > 10)? | Running totals with `SUM() OVER (ORDER BY …)` |
 | 4 | Which bowlers are most economical in each phase (powerplay, middle, death)? | `CASE` phase buckets + `PARTITION BY` |
-| 5 | _[Your fifth question, e.g. has death-over scoring changed season by season? Does the IPL differ from T20Is?]_ | `LAG()` over seasons |
+| 5 | Has death-over scoring changed season by season, and does the IPL differ from T20Is? | `LAG()` over seasons |
 
 ## 2. The data
 
@@ -57,7 +57,7 @@ Five questions answered in SQL:
 | Bowler vs batter matchups | _[result + number]_ |
 | Pressure chases | _[result + number]_ |
 | Phase economy | _[result + number]_ |
-| _[Q5]_ | _[result + number]_ |
+| Death-over scoring trend | _[result + number]_ |
 
 **So what:** _[Two or three sentences on how a team analyst, captain or fantasy player would use this.]_
 
@@ -97,7 +97,7 @@ cricket-analytics/
 │   ├── 02_matchups.sql
 │   ├── 03_pressure_chases.sql
 │   ├── 04_phase_economy.sql
-│   └── 05_[your_question].sql
+│   └── 05_death_scoring_trend.sql
 ├── dashboard/
 │   ├── data/                    # exported CSVs
 │   └── screenshot.png
